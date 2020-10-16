@@ -29,49 +29,40 @@ ON ta.category_id = tb.category_id
 group by category_id;
 
 	-- 5. Which actor has appeared in the most films?
-/*
+select*from sakila.actor;
 select*from sakila.film_actor;
 
-SELECT ta.actor_id, tb.first_name, tb.last_name, count(ta.film_id) AS 'amount of films', rank() over (order by ta.actor_id) as 'Rank' FROM sakila.film_actor AS ta
-JOIN sakila.actor AS tb
-ON ta.actor_id = tb.actor_id;
-group by actor_id;
-
-select count(film_id) from sakila.film_actor;
-
-SELECT ta.actor_id, tb.first_name, tb.last_name FROM sakila.film_actor AS ta
-JOIN sakila.actor AS tb
-ON ta.actor_id = tb.actor_id;
-*/
+			#Group by actor and order by count(film_id)
+SELECT tb.actor_id, tb.first_name, tb.last_name, count(ta.film_id) AS 'amount of films' FROM sakila.film_actor AS ta
+LEFT JOIN sakila.actor AS tb
+ON ta.actor_id = tb.actor_id 
+group by actor_id
+ORDER BY count(film_id) DESC;
 
 
 	-- 6. Most active customer.
-    select*from customer;
-select first_name, last_name, active, dense_rank() over (partition by active) as 'Rank' from sakila.customer
-order by active DESC;   
+select*from customer;
+select*from rental;
+			# basically checking the count of rent_id from rental and joining customer on customer_id / having active=1 / and then group by and order by
+            
+SELECT b.active, a.customer_id, b.first_name, b.last_name, count(a.rental_id) AS 'amount of rentals' FROM sakila.rental AS a
+LEFT JOIN sakila.customer AS b
+ON a.customer_id = b.customer_id 
+group by customer_id
+having b.active = 1
+ORDER BY count(rental_id) DESC;
 
 
 	-- 7. Most rented film.
-/*
 select*from film;
 select*from rental;
+select*from inventory;
 
-select inventory_id, count(rental_date) from sakila.rental
-group by inventory_id; -- basic operation to clear my thoughts
-
-select inventory_id, count(rental_date) from sakila.rental
-group by inventory_id;
-
-SELECT ta.film_id, ta.title, tb.inventory_id FROM sakila.film AS ta
-JOIN sakila.inventory AS tb
-ON ta.film_id = tb.film_id
-JOIN sakila.rental AS tc
-ON tb.inventory_id = tc.inventory_id; -- checking joined tables
-
-SELECT ta.film_id, ta.title, count(ta.title) AS 'amount films', count(tc.rental_date) AS 'amount rentals', tb.inventory_id, dense_rank() over (partition by ta.title order by ta.film_id) AS 'rank' FROM sakila.film AS ta
-JOIN sakila.inventory AS tb
-ON ta.film_id = tb.film_id
-JOIN sakila.rental AS tc
-ON tb.inventory_id = tc.inventory_id
-group by title;
-*/
+use sakila;
+SELECT a.title,a.film_id,COUNT(c.rental_date) as 'number_of_rented_films' from sakila.film AS a
+LEFT JOIN sakila.inventory AS b 
+ON a.film_id = b.film_id
+LEFT JOIN sakila.rental AS c 
+ON c.inventory_id = b.inventory_id
+group by a.film_id
+order by COUNT(c.rental_id) desc ; 
